@@ -7,12 +7,6 @@ import numpy as np
 pygame.init()
 font = pygame.font.Font('snake_pygame/arial.ttf', 25)
 
-# reset
-# reward
-# play(action) -> direction
-# frame (game iteration)
-# is_collision
-
 class Direction(Enum):
     RIGHT = 1
     LEFT = 2
@@ -29,7 +23,7 @@ BLUE2 = (0, 100, 255)
 BLACK = (0,0,0)
 
 BLOCK_SIZE = 20
-SPEED = 20
+SPEED = 40
 
 class SnakeGameRL:
     
@@ -53,18 +47,18 @@ class SnakeGameRL:
         
         self.score = 0
         self.food = None
-        self._placeFood()
-        self.frameIteration = 0
+        self._place_food()
+        self.frame_iteration = 0
 
-    def _placeFood(self):
+    def _place_food(self):
         x = random.randint(0, (self.w-BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE 
         y = random.randint(0, (self.h-BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE
         self.food = Point(x, y)
         if self.food in self.snake:
-            self._placeFood()
+            self._place_food()
         
-    def playStep(self, action):
-        self.frameIteration += 1
+    def play_step(self, action):
+        self.frame_iteration += 1
         # 1. collect user input
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -77,27 +71,27 @@ class SnakeGameRL:
         
         # 3. check if game over
         reward = 0
-        gameOver = False
-        if self.isCollision() or self.frameIteration > 100 * len(self.snake):
-            gameOver = True
+        game_over = False
+        if self.is_collision() or self.frame_iteration > 100 * len(self.snake):
+            game_over = True
             reward = -10
-            return reward, gameOver, self.score
+            return reward, game_over, self.score
             
         # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
             reward = 10
-            self._placeFood()
+            self._place_food()
         else:
             self.snake.pop()
         
         # 5. update ui and clock
-        self._updateUI()
+        self._update_ui()
         self.clock.tick(SPEED)
         # 6. return game over and score
-        return reward, gameOver, self.score
+        return reward, game_over, self.score
     
-    def isCollision(self, pt=None):
+    def is_collision(self, pt=None):
         if pt is None:
             pt = self.head
         # hits boundary
@@ -109,7 +103,7 @@ class SnakeGameRL:
         
         return False
         
-    def _updateUI(self):
+    def _update_ui(self):
         self.display.fill(BLACK)
         
         for pt in self.snake:
@@ -125,17 +119,17 @@ class SnakeGameRL:
     def _move(self, action):
         # [straight, right, left]
 
-        clockWise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
-        index = clockWise.index(self.direction)
+        clock_wise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
+        index = clock_wise.index(self.direction)
 
         if(np.array_equal(action, [1, 0, 0])):
-            newDir = clockWise[index] # no change
+            newDir = clock_wise[index] # no change
         elif(np.array_equal(action, [0, 1, 0])):
             nextIndex = (index + 1) % 4
-            newDir = clockWise[nextIndex] # right turn
+            newDir = clock_wise[nextIndex] # right turn
         else:
             nextIndex = (index - 1) % 4
-            newDir = clockWise[nextIndex] # left turn
+            newDir = clock_wise[nextIndex] # left turn
         
         self.direction = newDir
 
